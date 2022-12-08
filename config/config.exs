@@ -13,9 +13,12 @@ config :tw_playground,
 # Configures the endpoint
 config :tw_playground, TwPlaygroundWeb.Endpoint,
   url: [host: "localhost"],
-  render_errors: [view: TwPlaygroundWeb.ErrorView, accepts: ~w(html json), layout: false],
+  render_errors: [
+    formats: [html: TwPlaygroundWeb.ErrorHTML, json: TwPlaygroundWeb.ErrorJSON],
+    layout: false
+  ],
   pubsub_server: TwPlayground.PubSub,
-  live_view: [signing_salt: "jGdD06WJ"]
+  live_view: [signing_salt: "TtPAtTYb"]
 
 # Configures the mailer
 #
@@ -38,7 +41,7 @@ config :esbuild,
 
 # Configure tailwind (the version is required)
 config :tailwind,
-  version: "3.1.0",
+  version: "3.2.4",
   default: [
     args: ~w(
       --config=tailwind.config.js

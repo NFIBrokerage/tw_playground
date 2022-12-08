@@ -23,9 +23,8 @@ config :tw_playground, TwPlaygroundWeb.Endpoint,
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
-  secret_key_base: "RgYVWuxXtc8ecsDf3H+fGYPtzeEqcYEn68z5oo2Sz03Ntfu1lIFZoQEHHy4jcONZ",
+  secret_key_base: "XP0s+uD952E7FsLDn0sSTSgN/QtQmZGcfI3L8hTFPtAjEjz6a2HJQHg2ck9wZocF",
   watchers: [
-    # Start the esbuild watcher by calling Esbuild.install_and_run(:default, args)
     esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
     tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
   ]
@@ -38,7 +37,6 @@ config :tw_playground, TwPlaygroundWeb.Endpoint,
 #
 #     mix phx.gen.cert
 #
-# Note that this task requires Erlang/OTP 20 or later.
 # Run `mix help phx.gen.cert` for more information.
 #
 # The `http:` config above can be replaced with:
@@ -60,8 +58,7 @@ config :tw_playground, TwPlaygroundWeb.Endpoint,
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/tw_playground_web/(live|views)/.*(ex)$",
-      ~r"lib/tw_playground_web/templates/.*(eex)$"
+      ~r"lib/tw_playground_web/(controllers|live|components)/.*(ex|heex)$"
     ]
   ]
 

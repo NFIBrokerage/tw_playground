@@ -5,7 +5,7 @@ defmodule TwPlaygroundWeb.Router do
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_live_flash
-    plug :put_root_layout, {TwPlaygroundWeb.LayoutView, :root}
+    plug :put_root_layout, {TwPlaygroundWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
   end
@@ -17,7 +17,7 @@ defmodule TwPlaygroundWeb.Router do
   scope "/", TwPlaygroundWeb do
     pipe_through :browser
 
-    get "/", PageController, :index
+    get "/", PageController, :home
 
     live "/users", UserLive.Index, :index
     live "/users/new", UserLive.Index, :new
@@ -41,15 +41,10 @@ defmodule TwPlaygroundWeb.Router do
     # as long as you are also using SSL (which you should anyway).
     import Phoenix.LiveDashboard.Router
 
-    scope "/" do
-      pipe_through :browser
-
-      live_dashboard "/dashboard", metrics: TwPlaygroundWeb.Telemetry
-    end
-
     scope "/dev" do
       pipe_through :browser
 
+      live_dashboard "/dashboard", metrics: TwPlaygroundWeb.Telemetry
       forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
   end

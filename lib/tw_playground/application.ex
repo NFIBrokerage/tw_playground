@@ -14,6 +14,8 @@ defmodule TwPlayground.Application do
       TwPlayground.Repo,
       # Start the PubSub system
       {Phoenix.PubSub, name: TwPlayground.PubSub},
+      # Start Finch
+      {Finch, name: TwPlayground.Finch},
       # Start the Endpoint (http/https)
       TwPlaygroundWeb.Endpoint
       # Start a worker by calling: TwPlayground.Worker.start_link(arg)

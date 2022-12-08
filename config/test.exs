@@ -17,7 +17,7 @@ config :tw_playground, TwPlayground.Repo,
 # you can enable the server option below.
 config :tw_playground, TwPlaygroundWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
-  secret_key_base: "iUQTM+dFcuDNKP7G6W5IYUEujloCP4DUkdohU3w1OVphizeLwKtju9+aOAsQe/jD",
+  secret_key_base: "wMT6QRxMNjOiGLXxCmNaymrt8F9WOGTKHkmzCS56ZXvwg0fr8MOHqus/JC+edfkQ",
   server: false
 
 # In test we don't send emails.

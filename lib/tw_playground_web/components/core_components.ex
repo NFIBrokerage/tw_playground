@@ -1,4 +1,4 @@
-defmodule TwPlaygroundWeb.Components do
+defmodule TwPlaygroundWeb.CoreComponents do
   @moduledoc """
   Provides core UI components.
 
@@ -11,9 +11,8 @@ defmodule TwPlaygroundWeb.Components do
   """
   use Phoenix.Component
 
-  import TwPlaygroundWeb.Gettext, warn: false
-  
   alias Phoenix.LiveView.JS
+  import TwPlaygroundWeb.Gettext
 
   @doc """
   Renders a modal.
@@ -24,16 +23,16 @@ defmodule TwPlaygroundWeb.Components do
         Are you sure?
         <:confirm>OK</:confirm>
         <:cancel>Cancel</:cancel>
-      <.modal>
+      </.modal>
 
   JS commands may be passed to the `:on_cancel` and `on_confirm` attributes
-  for the caller to reactor to each button press, for example:
+  for the caller to react to each button press, for example:
 
       <.modal id="confirm" on_confirm={JS.push("delete")} on_cancel={JS.navigate(~p"/posts")}>
         Are you sure you?
         <:confirm>OK</:confirm>
-        <:cancel>Cancel</:confirm>
-      <.modal>
+        <:cancel>Cancel</:cancel>
+      </.modal>
   """
   attr :id, :string, required: true
   attr :show, :boolean, default: false
@@ -48,7 +47,12 @@ defmodule TwPlaygroundWeb.Components do
 
   def modal(assigns) do
     ~H"""
-    <div id={@id} phx-mounted={@show && show_modal(@id)} class="relative z-50 hidden">
+    <div
+      id={@id}
+      phx-mounted={@show && show_modal(@id)}
+      phx-remove={hide_modal(@id)}
+      class="relative z-50 hidden"
+    >
       <div id={"#{@id}-bg"} class="fixed inset-0 bg-zinc-50/90 transition-opacity" aria-hidden="true" />
       <div
         class="fixed inset-0 overflow-y-auto"
@@ -73,7 +77,7 @@ defmodule TwPlaygroundWeb.Components do
                   phx-click={hide_modal(@on_cancel, @id)}
                   type="button"
                   class="-m-3 flex-none p-3 opacity-20 hover:opacity-40"
-                  aria-label="Close"
+                  aria-label={gettext("close")}
                 >
                   <Heroicons.x_mark solid class="h-5 w-5 stroke-current" />
                 </button>
@@ -83,7 +87,11 @@ defmodule TwPlaygroundWeb.Components do
                   <h1 id={"#{@id}-title"} class="text-lg font-semibold leading-8 text-zinc-800">
                     <%= render_slot(@title) %>
                   </h1>
-                  <p :if={@subtitle != []} class="mt-2 text-sm leading-6 text-zinc-600">
+                  <p
+                    :if={@subtitle != []}
+                    id={"#{@id}-description"}
+                    class="mt-2 text-sm leading-6 text-zinc-600"
+                  >
                     <%= render_slot(@subtitle) %>
                   </p>
                 </header>
@@ -126,10 +134,10 @@ defmodule TwPlaygroundWeb.Components do
   attr :id, :string, default: "flash", doc: "the optional id of flash container"
   attr :flash, :map, default: %{}, doc: "the map of flash messages to display"
   attr :title, :string, default: nil
-  attr :rest, :global
-  attr :kind, :atom, doc: "one of :info, :error used for styling and flash lookup"
-  attr :autoshow, :boolean, default: true, doc: "wether to auto show the flash on mount"
+  attr :kind, :atom, values: [:info, :error], doc: "used for styling and flash lookup"
+  attr :autoshow, :boolean, default: true, doc: "whether to auto show the flash on mount"
   attr :close, :boolean, default: true, doc: "whether the flash can be closed"
+  attr :rest, :global, doc: "the arbitrary HTML attributes to add to the flash container"
 
   slot :inner_block, doc: "the optional inner block that renders the flash message"
 
@@ -140,22 +148,28 @@ defmodule TwPlaygroundWeb.Components do
       id={@id}
       phx-mounted={@autoshow && show("##{@id}")}
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("#flash")}
+      role="alert"
       class={[
-        "fixed hidden top-2 right-2 w-96 z-50 rounded-lg p-3 shadow-md shadow-zinc-900/5 ring-1",
+        "fixed hidden top-2 right-2 w-80 sm:w-96 z-50 rounded-lg p-3 shadow-md shadow-zinc-900/5 ring-1",
         @kind == :info && "bg-emerald-50 text-emerald-800 ring-emerald-500 fill-cyan-900",
         @kind == :error && "bg-rose-50 p-3 text-rose-900 shadow-md ring-rose-500 fill-rose-900"
       ]}
       {@rest}
     >
-      <button :if={@close} type="button" class="group absolute top-2 right-1 p-2" aria-label="Close">
-        <Heroicons.x_mark solid class="h-5 w-5 stroke-current opacity-40 group-hover:opacity-70" />
-      </button>
       <p :if={@title} class="flex items-center gap-1.5 text-[0.8125rem] font-semibold leading-6">
         <Heroicons.information_circle :if={@kind == :info} mini class="h-4 w-4" />
         <Heroicons.exclamation_circle :if={@kind == :error} mini class="h-4 w-4" />
         <%= @title %>
       </p>
       <p class="mt-2 text-[0.8125rem] leading-5"><%= msg %></p>
+      <button
+        :if={@close}
+        type="button"
+        class="group absolute top-2 right-1 p-2"
+        aria-label={gettext("close")}
+      >
+        <Heroicons.x_mark solid class="h-5 w-5 stroke-current opacity-40 group-hover:opacity-70" />
+      </button>
     </div>
     """
   end
@@ -170,12 +184,15 @@ defmodule TwPlaygroundWeb.Components do
         <.input field={{f, :username}} label="Username" />
         <:actions>
           <.button>Save</.button>
-        <:actions>
+        </:actions>
       </.simple_form>
   """
   attr :for, :any, default: nil, doc: "the datastructure for the form"
   attr :as, :any, default: nil, doc: "the server side parameter to collect all input under"
-  attr :rest, :global, doc: "the arbitraty HTML attributes to apply to the form tag"
+
+  attr :rest, :global,
+    include: ~w(autocomplete name rel action enctype method novalidate target),
+    doc: "the arbitrary HTML attributes to apply to the form tag"
 
   slot :inner_block, required: true
   slot :actions, doc: "the slot for form actions, such as a submit button"
@@ -203,7 +220,7 @@ defmodule TwPlaygroundWeb.Components do
   """
   attr :type, :string, default: nil
   attr :class, :string, default: nil
-  attr :rest, :global, doc: "the arbitraty HTML attributes to apply to the button tag"
+  attr :rest, :global, include: ~w(disabled form name value)
 
   slot :inner_block, required: true
 
@@ -241,20 +258,27 @@ defmodule TwPlaygroundWeb.Components do
 
   attr :type, :string,
     default: "text",
-    doc: ~s|one of "text", "textarea", "number" "email", "date", "time", "datetime", "select"|
+    values: ~w(checkbox color date datetime-local email file hidden month number password
+               range radio search select tel text textarea time url week)
 
   attr :value, :any
   attr :field, :any, doc: "a %Phoenix.HTML.Form{}/field name tuple, for example: {f, :email}"
   attr :errors, :list
-  attr :rest, :global, doc: "the arbitrary HTML attributes for the input tag"
-
+  attr :checked, :boolean, doc: "the checked flag for checkbox inputs"
+  attr :prompt, :string, default: nil, doc: "the prompt for select inputs"
+  attr :options, :list, doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2"
+  attr :multiple, :boolean, default: false, doc: "the multiple flag for select inputs"
+  attr :rest, :global, include: ~w(autocomplete cols disabled form max maxlength min minlength
+                                   pattern placeholder readonly required rows size step)
   slot :inner_block
-  slot :option, doc: "the slot for select input options"
 
   def input(%{field: {f, field}} = assigns) do
     assigns
     |> assign(field: nil)
-    |> assign_new(:name, fn -> Phoenix.HTML.Form.input_name(f, field) end)
+    |> assign_new(:name, fn ->
+      name = Phoenix.HTML.Form.input_name(f, field)
+      if assigns.multiple, do: name <> "[]", else: name
+    end)
     |> assign_new(:id, fn -> Phoenix.HTML.Form.input_id(f, field) end)
     |> assign_new(:value, fn -> Phoenix.HTML.Form.input_value(f, field) end)
     |> assign_new(:errors, fn -> translate_errors(f.errors || [], field) end)
@@ -262,13 +286,19 @@ defmodule TwPlaygroundWeb.Components do
   end
 
   def input(%{type: "checkbox"} = assigns) do
+    assigns = assign_new(assigns, :checked, fn -> input_equals?(assigns.value, "true") end)
+
     ~H"""
     <label phx-feedback-for={@name} class="flex items-center gap-4 text-sm leading-6 text-zinc-600">
+      <input type="hidden" name={@name} value="false" />
       <input
         type="checkbox"
         id={@id || @name}
         name={@name}
+        value="true"
+        checked={@checked}
         class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
+        {@rest}
       />
       <%= @label %>
     </label>
@@ -282,13 +312,14 @@ defmodule TwPlaygroundWeb.Components do
       <select
         id={@id}
         name={@name}
-        autocomplete={@name}
         class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-zinc-500 focus:border-zinc-500 sm:text-sm"
+        multiple={@multiple}
         {@rest}
       >
-        <option :for={opt <- @option} {assigns_to_attributes(opt)}><%= render_slot(opt) %></option>
+        <option :if={@prompt} value=""><%= @prompt %></option>
+        <%= Phoenix.HTML.Form.options_for_select(@options, @value) %>
       </select>
-      <.error :for={msg <- @errors} message={msg} />
+      <.error :for={msg <- @errors}><%= msg %></.error>
     </div>
     """
   end
@@ -302,13 +333,15 @@ defmodule TwPlaygroundWeb.Components do
         name={@name}
         class={[
           input_border(@errors),
-          "mt-2 block min-h-[6rem] w-full rounded-lg border-zinc-300 py-[calc(theme(spacing.2)-1px)] px-[calc(theme(spacing.3)-1px)]",
+          "mt-2 block min-h-[6rem] w-full rounded-lg border-zinc-300 py-[7px] px-[11px]",
           "text-zinc-900 focus:border-zinc-400 focus:outline-none focus:ring-4 focus:ring-zinc-800/5 sm:text-sm sm:leading-6",
           "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400 phx-no-feedback:focus:ring-zinc-800/5"
         ]}
         {@rest}
-      ><%= @value %></textarea>
-      <.error :for={msg <- @errors} message={msg} />
+      >
+
+    <%= @value %></textarea>
+      <.error :for={msg <- @errors}><%= msg %></.error>
     </div>
     """
   end
@@ -324,13 +357,13 @@ defmodule TwPlaygroundWeb.Components do
         value={@value}
         class={[
           input_border(@errors),
-          "mt-2 block w-full rounded-lg border-zinc-300 py-[calc(theme(spacing.2)-1px)] px-[calc(theme(spacing.3)-1px)]",
+          "mt-2 block w-full rounded-lg border-zinc-300 py-[7px] px-[11px]",
           "text-zinc-900 focus:outline-none focus:ring-4 sm:text-sm sm:leading-6",
           "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400 phx-no-feedback:focus:ring-zinc-800/5"
         ]}
         {@rest}
       />
-      <.error :for={msg <- @errors} message={msg} />
+      <.error :for={msg <- @errors}><%= msg %></.error>
     </div>
     """
   end
@@ -358,13 +391,13 @@ defmodule TwPlaygroundWeb.Components do
   @doc """
   Generates a generic error message.
   """
-  attr :message, :string, required: true
+  slot :inner_block, required: true
 
   def error(assigns) do
     ~H"""
     <p class="phx-no-feedback:hidden mt-3 flex gap-3 text-sm leading-6 text-rose-600">
       <Heroicons.exclamation_circle mini class="mt-0.5 h-5 w-5 flex-none fill-rose-500" />
-      <%= @message %>
+      <%= render_slot(@inner_block) %>
     </p>
     """
   end
@@ -399,13 +432,13 @@ defmodule TwPlaygroundWeb.Components do
 
   ## Examples
 
-      <.table rows={@users}>
+      <.table id="users" rows={@users}>
         <:col :let={user} label="id"><%= user.id %></:col>
         <:col :let={user} label="username"><%= user.username %></:col>
       </.table>
   """
   attr :id, :string, required: true
-  attr :row_click, JS, default: nil
+  attr :row_click, :any, default: nil
   attr :rows, :list, required: true
 
   slot :col, required: true do
@@ -421,30 +454,32 @@ defmodule TwPlaygroundWeb.Components do
         <thead class="text-left text-[0.8125rem] leading-6 text-zinc-500">
           <tr>
             <th :for={col <- @col} class="p-0 pb-4 pr-6 font-normal"><%= col[:label] %></th>
-            <th class="relative p-0 pb-4"><span class="sr-only">Actions</span></th>
+            <th class="relative p-0 pb-4"><span class="sr-only"><%= gettext("Actions") %></span></th>
           </tr>
         </thead>
         <tbody class="relative divide-y divide-zinc-100 border-t border-zinc-200 text-sm leading-6 text-zinc-700">
           <tr
             :for={row <- @rows}
             id={"#{@id}-#{Phoenix.Param.to_param(row)}"}
-            class="group hover:bg-zinc-50"
+            class="relative group hover:bg-zinc-50"
           >
             <td
               :for={{col, i} <- Enum.with_index(@col)}
               phx-click={@row_click && @row_click.(row)}
-              class={["relative p-0", @row_click && "hover:cursor-pointer"]}
+              class={["p-0", @row_click && "hover:cursor-pointer"]}
             >
+              <div :if={i == 0}>
+                <span class="absolute h-full w-4 top-0 -left-4 group-hover:bg-zinc-50 sm:rounded-l-xl" />
+                <span class="absolute h-full w-4 top-0 -right-4 group-hover:bg-zinc-50 sm:rounded-r-xl" />
+              </div>
               <div class="block py-4 pr-6">
-                <span class="absolute -inset-y-px right-0 -left-4 group-hover:bg-zinc-50 sm:rounded-l-xl" />
                 <span class={["relative", i == 0 && "font-semibold text-zinc-900"]}>
                   <%= render_slot(col, row) %>
                 </span>
               </div>
             </td>
-            <td :if={@action != []} class="relative p-0 w-14">
+            <td :if={@action != []} class="p-0 w-14">
               <div class="relative whitespace-nowrap py-4 text-right text-sm font-medium">
-                <span class="absolute -inset-y-px -right-4 left-0 group-hover:bg-zinc-50 sm:rounded-r-xl" />
                 <span
                   :for={action <- @action}
                   class="relative ml-4 font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
@@ -542,7 +577,8 @@ defmodule TwPlaygroundWeb.Components do
       transition: {"transition-all transform ease-out duration-300", "opacity-0", "opacity-100"}
     )
     |> show("##{id}-container")
-    |> JS.focus_first(to: "##{id}-container")
+    |> JS.add_class("overflow-hidden", to: "body")
+    |> JS.focus_first(to: "##{id}-content")
   end
 
   def hide_modal(js \\ %JS{}, id) do
@@ -553,6 +589,7 @@ defmodule TwPlaygroundWeb.Components do
     )
     |> hide("##{id}-container")
     |> JS.hide(to: "##{id}", transition: {"block", "block", "hidden"})
+    |> JS.remove_class("overflow-hidden", to: "body")
     |> JS.pop_focus()
   end
 
@@ -589,5 +626,9 @@ defmodule TwPlaygroundWeb.Components do
   """
   def translate_errors(errors, field) when is_list(errors) do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
+  end
+
+  defp input_equals?(val1, val2) do
+    Phoenix.HTML.html_escape(val1) == Phoenix.HTML.html_escape(val2)
   end
 end

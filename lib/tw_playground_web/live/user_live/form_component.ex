@@ -20,8 +20,8 @@ defmodule TwPlaygroundWeb.UserLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={{f, :name}} type="text" label="name" />
-        <.input field={{f, :age}} type="number" label="age" />
+        <.input field={{f, :name}} type="text" label="Name" />
+        <.input field={{f, :age}} type="number" label="Age" />
         <:actions>
           <.button phx-disable-with="Saving...">Save User</.button>
         </:actions>

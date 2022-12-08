@@ -7,7 +7,7 @@ defmodule TwPlaygroundWeb.Endpoint do
   @session_options [
     store: :cookie,
     key: "_tw_playground_key",
-    signing_salt: "s1tAjUtt",
+    signing_salt: "49vQqR3s",
     same_site: "Lax"
   ]
 
