@@ -7,10 +7,7 @@
   </:actions>
 </.header>
 
-<.live_component
-    module={TwPlaygroundWeb.UserLive.ButtonComponent}
-    id='hello'
-  />
+
 
 <.table id="users" rows={@users} row_click={&JS.navigate(~p"/users/#{&1}")}>
   <:col :let={user} label="Name"><%= user.name %></:col>
@@ -43,5 +40,30 @@
     navigate={~p"/users"}
   />
 </.modal>
+
+<h1 class="text-3xl">Buttons</h1>
+<div>
+<h2>Types</h2>
+<.live_component
+    module={TwPlaygroundWeb.UserLive.ButtonComponent}
+    id='1'
+    type='primary'
+  />
+<.live_component
+    module={TwPlaygroundWeb.UserLive.ButtonComponent}
+    id='2'
+    type="secondary"
+  />
+  <.live_component
+    module={TwPlaygroundWeb.UserLive.ButtonComponent}
+    id='3'
+        type="success"
+  />
+  <.live_component
+    module={TwPlaygroundWeb.UserLive.ButtonComponent}
+    id='4'
+        type="danger"
+  />
+</div>
 
  
