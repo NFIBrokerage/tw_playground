@@ -4,8 +4,7 @@ defmodule TwPlaygroundWeb.UserLive.ButtonComponent do
   alias TwPlayground.Accounts
 
   def update(assigns, socket) do
-    style = button_styling(@type)
-    assigns = Map.put_new(assigns, :class, style)
+    assigns = Map.put_new(assigns, :class, button_styling(assigns.type))
     {:ok, assign(socket, assigns)}
   end
 
@@ -27,7 +26,6 @@ defmodule TwPlaygroundWeb.UserLive.ButtonComponent do
   end
 
   defp button_styling(type) do
-    IO.puts(type)
     case type do
       "primary" -> "text-3xl"
       "secondary" -> "text-xl"
