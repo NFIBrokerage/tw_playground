@@ -3,6 +3,7 @@ defmodule TwPlaygroundWeb.UserLive.ButtonComponent do
 
   alias TwPlayground.Accounts
 
+
   def update(assigns, socket) do
     assigns = Map.put_new(assigns, :class, button_styling(assigns.type))
     {:ok, assign(socket, assigns)}
